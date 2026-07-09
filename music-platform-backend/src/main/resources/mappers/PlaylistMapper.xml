@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.music.platform.mapper.PlaylistMapper">
+
+    <resultMap id="PlaylistMap" type="com.music.platform.domain.Playlist">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="name" property="name"/>
+        <result column="liked_default" property="likedDefault"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <resultMap id="MusicMap" type="com.music.platform.domain.Music">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="artist" property="artist"/>
+        <result column="album" property="album"/>
+        <result column="mood_tag" property="moodTag" javaType="com.music.platform.domain.Mood"/>
+        <result column="duration_ms" property="durationMs"/>
+        <result column="music_path" property="musicPath"/>
+        <result column="cover_path" property="coverPath"/>
+        <result column="lyric_path" property="lyricPath"/>
+        <result column="play_count" property="playCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO playlist(user_id, name, liked_default)
+        VALUES (#{userId}, #{name}, #{likedDefault})
+    </insert>
+
+    <select id="listByUserId" resultMap="PlaylistMap">
+        SELECT *
+        FROM playlist
+        WHERE user_id = #{userId}
+        ORDER BY liked_default DESC, created_at DESC
+    </select>
+
+    <select id="findLikedDefaultByUserId" resultMap="PlaylistMap">
+        SELECT *
+        FROM playlist
+        WHERE user_id = #{userId}
+          AND liked_default = 1
+        LIMIT 1
+    </select>
+
+    <select id="findById" resultMap="PlaylistMap">
+        SELECT *
+        FROM playlist
+        WHERE id = #{id}
+    </select>
+
+    <insert id="addSong">
+        INSERT IGNORE INTO playlist_song(playlist_id, music_id)
+        VALUES (#{playlistId}, #{musicId})
+    </insert>
+
+    <delete id="removeSong">
+        DELETE
+        FROM playlist_song
+        WHERE playlist_id = #{playlistId}
+          AND music_id = #{musicId}
+    </delete>
+
+    <select id="listSongs" resultMap="MusicMap">
+        SELECT m.*
+        FROM playlist_song ps
+                 JOIN music m ON m.id = ps.music_id
+        WHERE ps.playlist_id = #{playlistId}
+        ORDER BY ps.created_at DESC
+    </select>
+
+    <delete id="deleteByIdForUser">
+        DELETE
+        FROM playlist
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </delete>
+
+</mapper>
+

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.music.platform.mapper.UserMapper">
+
+    <resultMap id="UserMap" type="com.music.platform.domain.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password_hash" property="passwordHash"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar_path" property="avatarPath"/>
+        <result column="bio" property="bio"/>
+        <result column="gender" property="gender" javaType="com.music.platform.domain.Gender"/>
+        <result column="age" property="age"/>
+        <result column="mood" property="mood" javaType="com.music.platform.domain.Mood"/>
+        <result column="role" property="role" javaType="com.music.platform.domain.Role"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findById" resultMap="UserMap">
+        SELECT *
+        FROM app_user
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByUsername" resultMap="UserMap">
+        SELECT *
+        FROM app_user
+        WHERE username = #{username}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO app_user(username, password_hash, nickname, mood, role)
+        VALUES (#{username}, #{passwordHash}, #{nickname}, #{mood}, #{role})
+    </insert>
+
+    <update id="updateMood">
+        UPDATE app_user
+        SET mood = #{mood}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePasswordHash">
+        UPDATE app_user
+        SET password_hash = #{passwordHash}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateProfile">
+        UPDATE app_user
+        SET nickname = #{nickname},
+            bio = #{bio},
+            gender = #{gender},
+            age = #{age}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateAvatarPath">
+        UPDATE app_user
+        SET avatar_path = #{avatarPath}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
+

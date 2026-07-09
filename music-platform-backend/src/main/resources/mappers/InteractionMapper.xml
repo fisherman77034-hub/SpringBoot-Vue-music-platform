@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.music.platform.mapper.InteractionMapper">
+
+    <resultMap id="CommentMap" type="com.music.platform.domain.MusicComment">
+        <id column="id" property="id"/>
+        <result column="music_id" property="musicId"/>
+        <result column="user_id" property="userId"/>
+        <result column="content" property="content"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="username" property="username"/>
+        <result column="nickname" property="nickname"/>
+    </resultMap>
+
+    <insert id="addComment">
+        INSERT INTO music_comment(music_id, user_id, content)
+        VALUES (#{musicId}, #{userId}, #{content})
+    </insert>
+
+    <select id="listComments" resultMap="CommentMap">
+        SELECT c.*, u.username, u.nickname
+        FROM music_comment c
+                 JOIN app_user u ON u.id = c.user_id
+        WHERE c.music_id = #{musicId}
+        ORDER BY c.created_at DESC
+    </select>
+
+    <insert id="ensureRatingRow">
+        INSERT IGNORE INTO music_rating_stat(music_id)
+        VALUES (#{musicId})
+    </insert>
+
+    <update id="addRating">
+        UPDATE music_rating_stat
+        SET star1_count  = star1_count + IF(#{star} = 1, 1, 0),
+            star2_count  = star2_count + IF(#{star} = 2, 1, 0),
+            star3_count  = star3_count + IF(#{star} = 3, 1, 0),
+            star4_count  = star4_count + IF(#{star} = 4, 1, 0),
+            star5_count  = star5_count + IF(#{star} = 5, 1, 0),
+            rating_count = rating_count + 1,
+            rating_sum   = rating_sum + #{star}
+        WHERE music_id = #{musicId}
+    </update>
+
+    <select id="getRatingStat" resultType="map">
+        SELECT star1_count,
+               star2_count,
+               star3_count,
+               star4_count,
+               star5_count,
+               rating_count,
+               rating_sum,
+               IF(rating_count = 0, 0, rating_sum / rating_count) AS avg_score
+        FROM music_rating_stat
+        WHERE music_id = #{musicId}
+    </select>
+
+    <select id="findUserStar" resultType="java.lang.Integer">
+        SELECT star
+        FROM music_user_rating
+        WHERE user_id = #{userId}
+          AND music_id = #{musicId}
+    </select>
+
+    <insert id="insertUserRating">
+        INSERT INTO music_user_rating(user_id, music_id, star)
+        VALUES (#{userId}, #{musicId}, #{star})
+    </insert>
+
+    <update id="updateUserRatingStar">
+        UPDATE music_user_rating
+        SET star = #{star}
+        WHERE user_id = #{userId}
+          AND music_id = #{musicId}
+    </update>
+
+    <update id="replaceRatingStat">
+        UPDATE music_rating_stat
+        SET star1_count  = star1_count + (CASE WHEN #{oldStar} = 1 THEN -1 ELSE 0 END) + (CASE WHEN #{newStar} = 1 THEN 1 ELSE 0 END),
+            star2_count  = star2_count + (CASE WHEN #{oldStar} = 2 THEN -1 ELSE 0 END) + (CASE WHEN #{newStar} = 2 THEN 1 ELSE 0 END),
+            star3_count  = star3_count + (CASE WHEN #{oldStar} = 3 THEN -1 ELSE 0 END) + (CASE WHEN #{newStar} = 3 THEN 1 ELSE 0 END),
+            star4_count  = star4_count + (CASE WHEN #{oldStar} = 4 THEN -1 ELSE 0 END) + (CASE WHEN #{newStar} = 4 THEN 1 ELSE 0 END),
+            star5_count  = star5_count + (CASE WHEN #{oldStar} = 5 THEN -1 ELSE 0 END) + (CASE WHEN #{newStar} = 5 THEN 1 ELSE 0 END),
+            rating_sum   = rating_sum - #{oldStar} + #{newStar}
+        WHERE music_id = #{musicId}
+    </update>
+
+</mapper>
+

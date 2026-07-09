@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.music.platform.mapper.MusicMapper">
+
+    <resultMap id="MusicMap" type="com.music.platform.domain.Music">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="artist" property="artist"/>
+        <result column="album" property="album"/>
+        <result column="mood_tag" property="moodTag" javaType="com.music.platform.domain.Mood"/>
+        <result column="duration_ms" property="durationMs"/>
+        <result column="music_path" property="musicPath"/>
+        <result column="cover_path" property="coverPath"/>
+        <result column="lyric_path" property="lyricPath"/>
+        <result column="play_count" property="playCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findById" resultMap="MusicMap">
+        SELECT *
+        FROM music
+        WHERE id = #{id}
+    </select>
+
+    <select id="list" resultMap="MusicMap">
+        SELECT *
+        FROM music
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="search" resultMap="MusicMap">
+        SELECT *
+        FROM music
+        WHERE title LIKE CONCAT('%', #{kw}, '%')
+           OR artist LIKE CONCAT('%', #{kw}, '%')
+        ORDER BY play_count DESC, created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="recommendByMood" resultMap="MusicMap">
+        SELECT *
+        FROM music
+        WHERE mood_tag = #{mood}
+        ORDER BY play_count DESC, created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO music(title, artist, album, mood_tag, duration_ms, music_path, cover_path, lyric_path)
+        VALUES (#{title}, #{artist}, #{album}, #{moodTag}, #{durationMs}, #{musicPath}, #{coverPath}, #{lyricPath})
+    </insert>
+
+    <update id="incPlayCount">
+        UPDATE music
+        SET play_count = play_count + 1
+        WHERE id = #{id}
+    </update>
+
+    <select id="countAdmin" resultType="long">
+        SELECT COUNT(*)
+        FROM music
+        <where>
+            <if test="kw != null and kw != ''">
+                (title LIKE CONCAT('%', #{kw}, '%') OR artist LIKE CONCAT('%', #{kw}, '%')
+                OR album LIKE CONCAT('%', #{kw}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <select id="pageAdmin" resultMap="MusicMap">
+        SELECT *
+        FROM music
+        <where>
+            <if test="kw != null and kw != ''">
+                (title LIKE CONCAT('%', #{kw}, '%') OR artist LIKE CONCAT('%', #{kw}, '%')
+                OR album LIKE CONCAT('%', #{kw}, '%'))
+            </if>
+        </where>
+        ORDER BY updated_at DESC, id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <update id="updateFull">
+        UPDATE music
+        SET title = #{title},
+            artist = #{artist},
+            album = #{album},
+            mood_tag = #{moodTag},
+            duration_ms = #{durationMs},
+            music_path = #{musicPath},
+            cover_path = #{coverPath},
+            lyric_path = #{lyricPath}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM music WHERE id = #{id}
+    </delete>
+
+</mapper>
+

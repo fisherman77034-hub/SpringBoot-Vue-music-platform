@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.music.platform.mapper.FavoriteMapper">
+
+    <resultMap id="MusicMap" type="com.music.platform.domain.Music">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="artist" property="artist"/>
+        <result column="album" property="album"/>
+        <result column="mood_tag" property="moodTag" javaType="com.music.platform.domain.Mood"/>
+        <result column="duration_ms" property="durationMs"/>
+        <result column="music_path" property="musicPath"/>
+        <result column="cover_path" property="coverPath"/>
+        <result column="lyric_path" property="lyricPath"/>
+        <result column="play_count" property="playCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <insert id="add">
+        INSERT IGNORE INTO user_favorite_music(user_id, music_id)
+        VALUES (#{userId}, #{musicId})
+    </insert>
+
+    <delete id="remove">
+        DELETE FROM user_favorite_music
+        WHERE user_id = #{userId} AND music_id = #{musicId}
+    </delete>
+
+    <select id="exists" resultType="int">
+        SELECT COUNT(1)
+        FROM user_favorite_music
+        WHERE user_id = #{userId} AND music_id = #{musicId}
+    </select>
+
+    <select id="list" resultMap="MusicMap">
+        SELECT m.*
+        FROM user_favorite_music f
+        JOIN music m ON m.id = f.music_id
+        WHERE f.user_id = #{userId}
+        ORDER BY f.created_at DESC
+    </select>
+
+</mapper>
+

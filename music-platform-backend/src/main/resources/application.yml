@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: music-platform-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/music_platform?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: Root123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 220MB
+
+mybatis:
+  mapper-locations: classpath:/mappers/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+app:
+  admin:
+    # 启动时：若无该用户则创建为 ADMIN；
+    enabled: true
+    username: admin
+    password: admin123
+    nickname: 管理员
+    # 自动登录
+    sync-password-if-not-matches: false
+  jwt:
+    issuer: music-platform
+
+    secret: "change-me-to-a-long-random-secret-change-me-to-a-long-random-secret"
+    expire-minutes: 10080
+
+  storage:
+    root: "./storage"
+    music-dir: "music"
+    cover-dir: "covers"
+    lyric-dir: "lyrics"
+    avatar-dir: "avatars"
+
